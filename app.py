@@ -4,8 +4,17 @@ import secrets
 from bcrypt import hashpw, gensalt, checkpw
 from utils.encryption import encrypt_data, decrypt_data
 from datetime import timedelta
+from flask_mail import Mail, Message
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Use dotenv for production
+# Add this block right after app initialization
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'xyz'       # Replace with your Gmail
+app.config['MAIL_PASSWORD'] = 'your_app_password'          # Use Gmail App Password
+
+mail = Mail(app)  # ✅ This initializes Flask-Mail
 app.permanent_session_lifetime = timedelta(minutes=5) # session log-out
 def generate_otp():
     return str(secrets.randbelow(1000000)).zfill(6)
@@ -55,20 +64,20 @@ init_db()
 def home():
     return render_template('home.html')
 
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']  # New field
         role = request.form['role']
         hashed_pw = hashpw(password.encode('utf-8'), gensalt())
 
         conn = sqlite3.connect('database/edusmart.db')
         c = conn.cursor()
         try:
-            c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                      (username, hashed_pw, role))
+            c.execute("INSERT INTO users (username, password, role, email) VALUES (?, ?, ?, ?)",
+                      (username, hashed_pw, role, email))
             conn.commit()
             flash('Registration successful. Please login.', 'success')
             return redirect(url_for('login'))
@@ -77,6 +86,7 @@ def register():
         finally:
             conn.close()
     return render_template('register.html')
+
 
 def log_attempt(username, status):
     conn = sqlite3.connect('database/edusmart.db')
@@ -91,26 +101,39 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email_input = request.form['email']  # Email entered by user
 
         conn = sqlite3.connect('database/edusmart.db')
         c = conn.cursor()
-        c.execute("SELECT password, role FROM users WHERE username = ?", (username,))
+        c.execute("SELECT password, role, email FROM users WHERE username = ?", (username,))
         user = c.fetchone()
         conn.close()
 
         if user and checkpw(password.encode('utf-8'), user[0]):
-            session.permanent = True
-            log_attempt(username, 'success')
-            otp = generate_otp()
-            session['otp'] = otp
+            registered_email = user[2]
+            if email_input != registered_email:
+                flash('Email does not match our records.', 'danger')
+                return redirect(url_for('login'))
+
             session['username'] = username
             session['role'] = user[1]
-            print(f"Your OTP is: {otp}")  # Display in terminal
+            session.permanent = True
+
+            otp = generate_otp()
+            session['otp'] = otp
+
+            # Send OTP to validated email
+            msg = Message('Your EduSmart OTP', sender='your_email@gmail.com', recipients=[registered_email])
+            msg.body = f'Hello {username},\n\nYour OTP is: {otp}\n\nPlease enter it to complete login.'
+            mail.send(msg)
+
+            flash('OTP sent to your registered email.', 'info')
             return redirect(url_for('verify_otp'))
         else:
-            log_attempt(username, 'failure')
             flash('Invalid credentials.', 'danger')
     return render_template('login.html')
+
+
 
 
 # Role-Based Dashboard
@@ -121,14 +144,14 @@ def dashboard():
         return redirect(url_for('login'))
 
     role = session.get('role')
-    if role == 'admin':
-        return render_template('admin_dashboard.html')
-    elif role == 'student':
+    if role == 'student':
         return render_template('student_dashboard.html')
     elif role == 'lecturer':
         return render_template('lecturer_dashboard.html')
+    elif role == 'admin':
+        return render_template('admin_dashboard.html')
     else:
-        flash('Unknown role.', 'danger')
+        flash('Invalid role. Access denied.', 'danger')
         return redirect(url_for('login'))
     
 
@@ -136,6 +159,7 @@ def dashboard():
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
     if 'otp' not in session:
+        flash('OTP expired or missing. Please log in again.', 'warning')
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -145,8 +169,9 @@ def verify_otp():
             flash('OTP verified. Access granted.', 'success')
             return redirect(url_for('dashboard'))
         else:
-            flash('Invalid OTP.', 'danger')
+            flash('Invalid OTP. Please try again.', 'danger')
     return render_template('verify_otp.html')
+
 
 
 @app.route('/admin/logs')
