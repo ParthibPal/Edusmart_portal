@@ -1,0 +1,16 @@
+<!-- templates/admin_logs.html -->
+<h2>Login Attempt Logs</h2>
+<table border="1">
+  <tr>
+    <th>Username</th>
+    <th>Status</th>
+    <th>Timestamp</th>
+  </tr>
+  {% for log in logs %}
+  <tr>
+    <td>{{ log[0] }}</td>
+    <td>{{ log[1] }}</td>
+    <td>{{ log[2] }}</td>
+  </tr>
+  {% endfor %}
+</table>

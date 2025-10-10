@@ -1,0 +1,15 @@
+<!-- templates/home.html -->
+<h1>Welcome to EduSmart Student Portal</h1>
+<p>This portal provides secure access to grades, tuition payments, and resources.</p>
+
+<ul>
+  <li><a href="{{ url_for('register') }}">Register</a></li>
+  <li><a href="{{ url_for('login') }}">Login</a></li>
+</ul>
+
+{% if 'username' in session %}
+  <p>Logged in as {{ session['username'] }} ({{ session['role'] }})</p>
+  <a href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+  <a href="{{ url_for('logout') }}">Logout</a>
+{% endif %}
+

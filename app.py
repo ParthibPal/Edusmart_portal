@@ -13,6 +13,8 @@ def generate_otp():
 def init_db():
     conn = sqlite3.connect('database/edusmart.db')
     c = conn.cursor()
+
+    # Users table
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,12 +23,29 @@ def init_db():
             role TEXT NOT NULL
         )
     ''')
+
+    # Login logs table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS login_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT,
+            status TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     conn.commit()
     conn.close()
+
 
 init_db()
 
 # Routes
+@app.route('/')
+def home():
+    return render_template('home.html')
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -49,6 +68,13 @@ def register():
             conn.close()
     return render_template('register.html')
 
+def log_attempt(username, status):
+    conn = sqlite3.connect('database/edusmart.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO login_logs (username, status) VALUES (?, ?)", (username, status))
+    conn.commit()
+    conn.close()
+
 # Login + RBAC
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -63,6 +89,7 @@ def login():
         conn.close()
 
         if user and checkpw(password.encode('utf-8'), user[0]):
+            log_attempt(username, 'success')
             otp = generate_otp()
             session['otp'] = otp
             session['username'] = username
@@ -70,6 +97,7 @@ def login():
             print(f"Your OTP is: {otp}")  # Display in terminal
             return redirect(url_for('verify_otp'))
         else:
+            log_attempt(username, 'failure')
             flash('Invalid credentials.', 'danger')
     return render_template('login.html')
 
@@ -107,3 +135,24 @@ def verify_otp():
         else:
             flash('Invalid OTP.', 'danger')
     return render_template('verify_otp.html')
+
+
+@app.route('/admin/logs')
+def view_logs():
+    if 'username' not in session or session.get('role') != 'admin':
+        flash('Access denied. Admins only.', 'danger')
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database/edusmart.db')
+    c = conn.cursor()
+    c.execute("SELECT username, status, timestamp FROM login_logs ORDER BY timestamp DESC")
+    logs = c.fetchall()
+    conn.close()
+
+    return render_template('admin_logs.html', logs=logs)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('home'))
