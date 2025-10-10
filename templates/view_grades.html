@@ -1,0 +1,7 @@
+<h2>Decrypted Grades</h2>
+<table border="1">
+  <tr><th>Student</th><th>Grade</th></tr>
+  {% for student, grade in grades %}
+  <tr><td>{{ student }}</td><td>{{ grade }}</td></tr>
+  {% endfor %}
+</table>

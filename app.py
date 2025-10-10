@@ -2,10 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 import secrets
 from bcrypt import hashpw, gensalt, checkpw
-
+from utils.encryption import encrypt_data, decrypt_data
+from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Use dotenv for production
-
+app.permanent_session_lifetime = timedelta(minutes=5) # session log-out
 def generate_otp():
     return str(secrets.randbelow(1000000)).zfill(6)
 
@@ -31,6 +32,15 @@ def init_db():
             username TEXT,
             status TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Create Encrypted Grades Table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS grades (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student TEXT,
+            encrypted_grade BLOB
         )
     ''')
 
@@ -89,6 +99,7 @@ def login():
         conn.close()
 
         if user and checkpw(password.encode('utf-8'), user[0]):
+            session.permanent = True
             log_attempt(username, 'success')
             otp = generate_otp()
             session['otp'] = otp
@@ -106,6 +117,7 @@ def login():
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
+        flash('Session expired. Please log in again.', 'warning')
         return redirect(url_for('login'))
 
     role = session.get('role')
@@ -156,3 +168,40 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
+
+# Route to Store Encrypted Grade
+@app.route('/submit_grade', methods=['GET', 'POST'])
+def submit_grade():
+    if 'username' not in session or session['role'] != 'admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        student = request.form['student']
+        grade = request.form['grade']
+        encrypted = encrypt_data(grade)
+
+        conn = sqlite3.connect('database/edusmart.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO grades (student, encrypted_grade) VALUES (?, ?)", (student, encrypted))
+        conn.commit()
+        conn.close()
+
+        flash('Grade encrypted and stored.', 'success')
+    return render_template('submit_grade.html')
+
+# Route to View Decrypted Grades
+@app.route('/view_grades')
+def view_grades():
+    if 'username' not in session or session['role'] != 'admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect('database/edusmart.db')
+    c = conn.cursor()
+    c.execute("SELECT student, encrypted_grade FROM grades")
+    rows = c.fetchall()
+    conn.close()
+
+    decrypted = [(r[0], decrypt_data(r[1])) for r in rows]
+    return render_template('view_grades.html', grades=decrypted)
