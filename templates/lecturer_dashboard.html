@@ -1,3 +1,36 @@
-<!-- templates/lecturer_dashboard.html -->
-<h2>Welcome Lecturer</h2>
-<a href="{{ url_for('logout') }}">Logout</a>
+{% extends 'base.html' %}
+{% block title %}Lecturer Dashboard{% endblock %}
+{% block content %}
+<style>
+  .lecturer-container {
+    background: white;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .lecturer-container h2 {
+    color: #003366;
+    margin-bottom: 1em;
+  }
+
+  .lecturer-container a {
+    background: #0055cc;
+    color: white;
+    padding: 0.5em 1em;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 1em;
+  }
+</style>
+
+<div class="lecturer-container">
+  <h2>Welcome, Lecturer</h2>
+  <p>You can manage course materials, view student submissions, and more.</p>
+  <a href="{{ url_for('logout') }}">Logout</a>
+</div>
+{% endblock %}

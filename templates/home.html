@@ -1,15 +1,85 @@
-<!-- templates/home.html -->
-<h1>Welcome to EduSmart Student Portal</h1>
-<p>This portal provides secure access to grades, tuition payments, and resources.</p>
+{% extends 'base.html' %}
+{% block title %}Welcome to EduSmart{% endblock %}
+{% block content %}
+<style>
+  .home-container {
+    background: white;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin: 2em auto;
+    text-align: center;
+  }
 
-<ul>
-  <li><a href="{{ url_for('register') }}">Register</a></li>
-  <li><a href="{{ url_for('login') }}">Login</a></li>
-</ul>
+  .home-container h1 {
+    color: #003366;
+    margin-bottom: 0.5em;
+  }
 
-{% if 'username' in session %}
-  <p>Logged in as {{ session['username'] }} ({{ session['role'] }})</p>
-  <a href="{{ url_for('dashboard') }}">Go to Dashboard</a>
-  <a href="{{ url_for('logout') }}">Logout</a>
-{% endif %}
+  .home-container p {
+    font-size: 1.1em;
+    margin-bottom: 1.5em;
+    color: #333;
+  }
 
+  .home-container ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5em;
+  }
+
+  .home-container li {
+    margin: 0.75em 0;
+  }
+
+  .home-container a {
+    background: #0055cc;
+    color: white;
+    padding: 0.6em 1.2em;
+    text-decoration: none;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+
+  .home-container a:hover {
+    background-color: #003f99;
+  }
+
+  .session-info {
+    margin-top: 2em;
+    font-size: 0.95em;
+    color: #333;
+  }
+
+  .session-info a {
+    margin-left: 1em;
+    color: #0055cc;
+    text-decoration: underline;
+  }
+
+  .session-info a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<div class="home-container">
+  <h1>Welcome to EduSmart Student Portal</h1>
+  <p>This portal provides secure access to grades, tuition payments, and resources.</p>
+
+  <ul>
+    <li><a href="{{ url_for('register') }}">Register</a></li>
+    <li><a href="{{ url_for('login') }}">Login</a></li>
+  </ul>
+
+  {% if 'username' in session %}
+  <div class="session-info">
+    <p>Logged in as <strong>{{ session['username'] }}</strong> ({{ session['role'] }})</p>
+    <a href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

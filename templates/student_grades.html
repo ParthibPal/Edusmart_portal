@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}My Grades{% endblock %}
+{% block content %}
+<div class="student-container">
+    <h2>Your Grades</h2>
+    <table>
+      <tr><th>Subject</th><th>Grade</th></tr>
+      {% for subject, grade in grades %}
+        <tr><td>{{ subject }}</td><td>{{ grade }}</td></tr>
+      {% endfor %}
+    </table>    
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,7 +1,61 @@
-<h2>Decrypted Grades</h2>
-<table border="1">
-  <tr><th>Student</th><th>Grade</th></tr>
-  {% for student, grade in grades %}
-  <tr><td>{{ student }}</td><td>{{ grade }}</td></tr>
-  {% endfor %}
-</table>
+{% extends 'base.html' %}
+{% block title %}Decrypted Grades{% endblock %}
+{% block content %}
+<style>
+  .grades-container {
+    background: white;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .grades-container h2 {
+    color: #003366;
+    margin-bottom: 1em;
+    text-align: center;
+  }
+
+  .grades-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .grades-table th,
+  .grades-table td {
+    padding: 0.75em;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .grades-table th {
+    background-color: #003366;
+    color: white;
+  }
+
+  .grades-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+</style>
+
+<div class="grades-container">
+  <h2>Decrypted Grades</h2>
+  <table class="grades-table">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student, grade in grades %}
+      <tr>
+        <td>{{ student }}</td>
+        <td>{{ grade }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
