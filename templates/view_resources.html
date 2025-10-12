@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Learning Resources{% endblock %}
+{% block content %}
+<style>
+  .resource-list {
+    background: white;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 2em auto;
+  }
+
+  .resource-item {
+    margin-bottom: 1.5em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .resource-item h3 {
+    color: #003366;
+    margin-bottom: 0.5em;
+  }
+
+  .resource-item a {
+    color: #0055cc;
+    text-decoration: underline;
+  }
+
+  .resource-item a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<div class="resource-list">
+  <h2>Available Learning Resources</h2>
+  {% for title, description, link, posted_by, posted_on in resources %}
+    <div class="resource-item">
+      <h3>{{ title }}</h3>
+      <p>{{ description }}</p>
+      <p><strong>Posted by:</strong> {{ posted_by }} on {{ posted_on }}</p>
+      <p><a href="{{ link }}" target="_blank">Access Resource</a></p>
+    </div>
+  {% endfor %}
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}

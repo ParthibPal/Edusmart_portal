@@ -3,7 +3,7 @@ import sqlite3
 import secrets, os
 from bcrypt import hashpw, gensalt, checkpw
 from utils.encryption import encrypt_data, decrypt_data
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask_mail import Mail, Message
 from functools import wraps
 from dotenv import load_dotenv
@@ -48,12 +48,37 @@ def init_db():
             )
         ''')
 
-        # Grades table
+        # Grades table (subject-wise, email-based)
         c.execute('''
             CREATE TABLE IF NOT EXISTS grades (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                student TEXT,
+                student_name TEXT,
+                student_email TEXT,
+                subject TEXT,
                 encrypted_grade BLOB
+            )
+        ''')
+
+        # Tuition payments table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS tuition (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_email TEXT,
+                amount_paid REAL,
+                payment_date TEXT,
+                receipt_id TEXT
+            )
+        ''')
+
+        # Learning resources table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS resources (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                description TEXT,
+                link TEXT,
+                posted_by TEXT,
+                posted_on TEXT
             )
         ''')
 
@@ -61,19 +86,32 @@ def init_db():
 
 
 
+
 init_db()
 
 # Routes
-def role_required(required_role):
+def role_required(required_roles):
     def wrapper(f):
         @wraps(f)
         def decorated(*args, **kwargs):
-            if 'username' not in session or session.get('role') != required_role:
-                flash('Access denied.', 'danger')
+            if 'username' not in session:
+                flash('Access denied. Please log in.', 'danger')
                 return redirect(url_for('login'))
+
+            user_role = session.get('role')
+            if isinstance(required_roles, list):
+                if user_role not in required_roles:
+                    flash('Access denied. Insufficient permissions.', 'danger')
+                    return redirect(url_for('login'))
+            else:
+                if user_role != required_roles:
+                    flash('Access denied. Insufficient permissions.', 'danger')
+                    return redirect(url_for('login'))
+
             return f(*args, **kwargs)
         return decorated
     return wrapper
+
 
 @app.route('/')
 def home():
@@ -153,6 +191,23 @@ def login():
 
 
 # Role-Based Dashboard
+# @app.route('/dashboard')
+# def dashboard():
+#     if 'username' not in session:
+#         flash('Session expired. Please log in again.', 'warning')
+#         return redirect(url_for('login'))
+
+#     role = session.get('role')
+#     if role == 'student':
+#         return render_template('student_dashboard.html')
+#     elif role == 'lecturer':
+#         return render_template('lecturer_dashboard.html')
+#     elif role == 'admin':
+#         return render_template('admin_dashboard.html')
+#     else:
+#         flash('Invalid role. Access denied.', 'danger')
+#         return redirect(url_for('login'))
+
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session:
@@ -160,16 +215,8 @@ def dashboard():
         return redirect(url_for('login'))
 
     role = session.get('role')
-    if role == 'student':
-        return render_template('student_dashboard.html')
-    elif role == 'lecturer':
-        return render_template('lecturer_dashboard.html')
-    elif role == 'admin':
-        return render_template('admin_dashboard.html')
-    else:
-        flash('Invalid role. Access denied.', 'danger')
-        return redirect(url_for('login'))
-    
+    return redirect(url_for(f"{role}_dashboard"))
+
 
 # OTP Verification Route
 @app.route('/verify_otp', methods=['GET', 'POST'])
@@ -240,21 +287,42 @@ def view_grades():
 
     conn = sqlite3.connect('database/edusmart.db')
     c = conn.cursor()
-    c.execute("SELECT student, encrypted_grade FROM grades")
+    c.execute("SELECT student_name, subject, encrypted_grade FROM grades")
     rows = c.fetchall()
     conn.close()
 
-    decrypted = []
-    for student, encrypted_grade in rows:
+    grouped = {}
+    for student_name, subject, encrypted_grade in rows:
         try:
             grade = decrypt_data(encrypted_grade)
         except Exception as e:
             grade = "[Error]"
-            print(f"Decryption failed for {student}: {e}")
-        decrypted.append((student, grade))
+            print(f"Decryption failed for {student_name} - {subject}: {e}")
+        grouped.setdefault(student_name, []).append((subject, grade))
 
-    return render_template('view_grades.html', grades=decrypted)
+    return render_template('view_grades.html', grouped_grades=grouped)
 
+
+@app.route('/admin_dashboard')
+@role_required('admin')
+def admin_dashboard():
+    with sqlite3.connect('database/edusmart.db') as conn:
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM resources")
+        resource_count = c.fetchone()[0]
+    return render_template('admin_dashboard.html', resource_count=resource_count)
+
+
+@app.route('/lecturer_dashboard')
+@role_required('lecturer')
+def lecturer_dashboard():
+    return render_template('lecturer_dashboard.html')
+
+@app.route('/student_dashboard')
+@role_required('student')
+def student_dashboard():
+    return render_template('student_dashboard.html')
+ 
 
 @app.route('/my_grades')
 @role_required('student')
@@ -275,3 +343,63 @@ def my_grades():
         decrypted.append((subject, grade))
 
     return render_template('student_grades.html', grades=decrypted)
+
+
+@app.route('/submit_tuition', methods=['GET', 'POST'])
+@role_required('admin')
+def submit_tuition():
+    if request.method == 'POST':
+        email = request.form['student_email']
+        amount = float(request.form['amount_paid'])
+        date = request.form['payment_date']
+        receipt = request.form['receipt_id']
+
+        with sqlite3.connect('database/edusmart.db') as conn:
+            c = conn.cursor()
+            c.execute("INSERT INTO tuition (student_email, amount_paid, payment_date, receipt_id) VALUES (?, ?, ?, ?)",
+                      (email, amount, date, receipt))
+            conn.commit()
+
+        flash('Tuition payment recorded successfully.', 'success')
+    return render_template('submit_tuition.html')
+
+@app.route('/my_tuition')
+@role_required('student')
+def my_tuition():
+    email = session.get('email')
+
+    with sqlite3.connect('database/edusmart.db') as conn:
+        c = conn.cursor()
+        c.execute("SELECT amount_paid, payment_date, receipt_id FROM tuition WHERE student_email = ?", (email,))
+        records = c.fetchall()
+
+    return render_template('student_tuition.html', payments=records)
+
+@app.route('/upload_resource', methods=['GET', 'POST'])
+@role_required(['admin', 'lecturer'])
+def upload_resource():
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        link = request.form['link']
+        posted_by = session.get('username')
+        posted_on = datetime.now().strftime('%Y-%m-%d')
+
+        with sqlite3.connect('database/edusmart.db') as conn:
+            c = conn.cursor()
+            c.execute("INSERT INTO resources (title, description, link, posted_by, posted_on) VALUES (?, ?, ?, ?, ?)",
+                      (title, description, link, posted_by, posted_on))
+            conn.commit()
+
+        flash('Resource uploaded successfully.', 'success')
+    return render_template('upload_resource.html')
+
+@app.route('/view_resources')
+@role_required('student')
+def view_resources():
+    with sqlite3.connect('database/edusmart.db') as conn:
+        c = conn.cursor()
+        c.execute("SELECT title, description, link, posted_by, posted_on FROM resources ORDER BY posted_on DESC")
+        resources = c.fetchall()
+
+    return render_template('view_resources.html', resources=resources)

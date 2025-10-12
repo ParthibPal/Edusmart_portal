@@ -7,7 +7,7 @@
     padding: 2em;
     border-radius: 8px;
     box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    max-width: 600px;
+    max-width: 700px;
     margin: 2em auto;
     text-align: center;
   }
@@ -15,6 +15,7 @@
   .home-container h1 {
     color: #003366;
     margin-bottom: 0.5em;
+    font-size: 2em;
   }
 
   .home-container p {
@@ -23,14 +24,24 @@
     color: #333;
   }
 
-  .home-container ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 1.5em;
+  .features {
+    text-align: left;
+    margin: 2em 0;
   }
 
-  .home-container li {
-    margin: 0.75em 0;
+  .features h3 {
+    color: #0055cc;
+    margin-bottom: 0.5em;
+  }
+
+  .features ul {
+    list-style: disc;
+    padding-left: 1.5em;
+    color: #333;
+  }
+
+  .home-container .actions {
+    margin-top: 2em;
   }
 
   .home-container a {
@@ -41,6 +52,7 @@
     border-radius: 4px;
     display: inline-block;
     font-weight: 500;
+    margin: 0.5em;
     transition: background-color 0.3s ease;
   }
 
@@ -66,13 +78,25 @@
 </style>
 
 <div class="home-container">
-  <h1>Welcome to EduSmart Student Portal</h1>
-  <p>This portal provides secure access to grades, tuition payments, and resources.</p>
+  <h1>Welcome to EduSmart Portal</h1>
+  <p>EduSmart is your secure gateway to academic success. Whether you're a student, lecturer, or administrator, this portal provides personalized access to essential tools and information.</p>
 
-  <ul>
-    <li><a href="{{ url_for('register') }}">Register</a></li>
-    <li><a href="{{ url_for('login') }}">Login</a></li>
-  </ul>
+  <div class="features">
+    <h3>Key Features:</h3>
+    <ul>
+      <li>🔐 Secure login with OTP verification</li>
+      <li>📊 Students can view subject-wise encrypted grades</li>
+      <li>🧾 Tuition payment tracking and receipts</li>
+      <li>📚 Access to learning resources and announcements</li>
+      <li>🧑‍🏫 Lecturers can manage student performance</li>
+      <li>🛠️ Admins can submit grades and oversee portal activity</li>
+    </ul>
+  </div>
+
+  <div class="actions">
+    <a href="{{ url_for('register') }}">Register</a>
+    <a href="{{ url_for('login') }}">Login</a>
+  </div>
 
   {% if 'username' in session %}
   <div class="session-info">

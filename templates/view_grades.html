@@ -7,7 +7,7 @@
     padding: 2em;
     border-radius: 8px;
     box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
   }
 
@@ -15,6 +15,15 @@
     color: #003366;
     margin-bottom: 1em;
     text-align: center;
+  }
+
+  .student-block {
+    margin-bottom: 2em;
+  }
+
+  .student-block h3 {
+    color: #0055cc;
+    margin-bottom: 0.5em;
   }
 
   .grades-table {
@@ -41,21 +50,27 @@
 
 <div class="grades-container">
   <h2>Decrypted Grades</h2>
-  <table class="grades-table">
-    <thead>
-      <tr>
-        <th>Student</th>
-        <th>Grade</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for student, grade in grades %}
-      <tr>
-        <td>{{ student }}</td>
-        <td>{{ grade }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+  {% for student_name, subjects in grouped_grades.items() %}
+    <div class="student-block">
+      <h3>{{ student_name }}</h3>
+      <table class="grades-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for subject, grade in subjects %}
+          <tr>
+            <td>{{ subject }}</td>
+            <td>{{ grade }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
 </div>
 {% endblock %}

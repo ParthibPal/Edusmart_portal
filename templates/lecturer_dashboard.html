@@ -31,6 +31,7 @@
 <div class="lecturer-container">
   <h2>Welcome, Lecturer</h2>
   <p>You can manage course materials, view student submissions, and more.</p>
+  <a href="{{ url_for('upload_resource') }}">Upload Learning Resource</a>
   <a href="{{ url_for('logout') }}">Logout</a>
 </div>
 {% endblock %}

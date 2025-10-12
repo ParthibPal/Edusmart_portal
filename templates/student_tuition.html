@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}My Tuition Payments{% endblock %}
+{% block content %}
+<style>
+  .tuition-history {
+    background: white;
+    padding: 2em;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 2em auto;
+  }
+
+  .tuition-history table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .tuition-history th, .tuition-history td {
+    border: 1px solid #ccc;
+    padding: 0.75em;
+    text-align: center;
+  }
+
+  .tuition-history th {
+    background-color: #0055cc;
+    color: white;
+  }
+</style>
+
+<div class="tuition-history">
+  <h2>Your Tuition Payment History</h2>
+  <table>
+    <tr><th>Amount</th><th>Date</th><th>Receipt ID</th></tr>
+    {% for amount, date, receipt in payments %}
+      <tr><td>{{ amount }}</td><td>{{ date }}</td><td>{{ receipt }}</td></tr>
+    {% endfor %}
+  </table>
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</div>
+{% endblock %}
