@@ -43,7 +43,56 @@ EduSmart is a secure, role-based web application designed for academic instituti
 ## 📂 Folder Structure
 
 
-<img width="255" height="779" alt="image" src="https://github.com/user-attachments/assets/dafeb452-0322-4712-be67-621d619414c0" />
+EDUSMART_PORTAL/
+│
+├── __pycache__/
+│   ├── app.cpython-311.pyc
+│   ├── app.cpython-313.pyc
+│   └── app.cpython-313.pyc
+│
+├── database/
+│   ├── edusmart.db
+│   └── sql_query_tester.py
+│
+├── static/
+│   └── style.css
+│
+├── templates/
+│   ├── admin_dashboard.html
+│   ├── admin_logs.html
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── home.html
+│   ├── lecturer_dashboard.html
+│   ├── login.html
+│   ├── register.html
+│   ├── student_dashboard.html
+│   ├── student_grades.html
+│   ├── student_tuition.html
+│   ├── submit_grade.html
+│   ├── submit_tuition.html
+│   ├── upload_resource.html
+│   ├── verify_otp.html
+│   ├── view_grades.html
+│   └── view_resources.html
+│
+├── utils/
+│   ├── __pycache__/
+│   ├── encryption.py
+│   ├── logger.py
+│   └── otp.py
+│
+├── venv/
+│
+├── .env
+├── .gitignore
+├── app.py
+├── config.py
+├── forms.py
+├── models.py
+├── README.md
+├── requirements.txt
+└── secret.key
 
 
 
