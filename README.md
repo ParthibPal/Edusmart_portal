@@ -11,7 +11,6 @@ EduSmart is a secure, role-based web application designed for academic instituti
   Separate interfaces for Admins, Lecturers, and Students with session-aware navigation.
 
 - 🧮 **Encrypted Grade Management**
-  <img width="1920" height="923" alt="image" src="https://github.com/user-attachments/assets/2a7be73b-8af4-4a0c-aa38-ca07f424be4c" />
   Admins can submit subject-wise grades using Fernet encryption; students view decrypted marks securely.
 
 - 🧾 **Tuition Tracking**  
