@@ -43,24 +43,8 @@ EduSmart is a secure, role-based web application designed for academic instituti
 ## 📂 Folder Structure
 
 
-edusmart_portal/
-│
-├── app.py
-│
-├── templates/
-│   ├── base.html
-│   ├── login.html
-│   ├── admin_dashboard.html
-│   ├── student_dashboard.html
-│   └── ...
-│
-├── static/
-│   └── style.css
-│
-├── database/
-│   └── edusmart.db
-│
-└── secret.key
+<img width="255" height="779" alt="image" src="https://github.com/user-attachments/assets/dafeb452-0322-4712-be67-621d619414c0" />
+
 
 
 ---
