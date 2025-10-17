@@ -1,4 +1,4 @@
-# edusmart_portal
+# Edusmart_portal
 # 🎓 EduSmart Portal
 
 EduSmart is a secure, role-based web application designed for academic institutions to manage grades, tuition payments, and learning resources. Built with modern full-stack technologies, it supports Admin, Lecturer, and Student roles with encrypted data handling and intuitive dashboards.
