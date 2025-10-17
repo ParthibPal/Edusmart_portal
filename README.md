@@ -1,3 +1,4 @@
+```
 # edusmart_portal
 # 🎓 EduSmart Portal
 
@@ -150,3 +151,4 @@ Built by **Parthib** — aspiring SDE focused on secure, scalable web applicatio
 📧 Email: palparthib97@gmail.com  
 
 ---
+```
