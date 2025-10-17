@@ -1,4 +1,3 @@
-```
 # edusmart_portal
 # 🎓 EduSmart Portal
 
@@ -42,7 +41,7 @@ EduSmart is a secure, role-based web application designed for academic instituti
 ---
 
 ## 📂 Folder Structure
-
+```
 EDUSMART_PORTAL/
 │
 ├── __pycache__/
@@ -93,7 +92,7 @@ EDUSMART_PORTAL/
 ├── README.md
 ├── requirements.txt
 └── secret.key
-
+```
 
 ---
 
@@ -151,4 +150,3 @@ Built by **Parthib** — aspiring SDE focused on secure, scalable web applicatio
 📧 Email: palparthib97@gmail.com  
 
 ---
-```
